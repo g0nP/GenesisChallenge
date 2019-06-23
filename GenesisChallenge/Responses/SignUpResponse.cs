@@ -14,13 +14,15 @@ namespace GenesisChallenge.Responses
     public class SignUpResponse : ISignUpResponse
     {
         public string Token { get; set; }
-        public DateTime CreationOn { get; set; }
-        public string Email { get; set; }
         public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public IEnumerable<int> Telephones { get; set; }
+        public DateTime CreationOn { get; set; }
         public DateTime LastLoginOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }
-        public string Name { get; set; }
-        public string Password { get; set; }
-        public IList<int> Telephones { get; set; }
+        
+       
     }
 }

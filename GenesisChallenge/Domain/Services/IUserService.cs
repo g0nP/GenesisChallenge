@@ -10,7 +10,7 @@ namespace GenesisChallenge.Domain.Services
 {
     public interface IUserService
     {
-        ISignUpResponse SignUp(IUser user);
+        ISignUpResponse SignUp(SignUpDto user);
         ISignInResponse SignIn(SignInDto signInDto);
         IUser GetUser(Guid userId);
     }

@@ -14,7 +14,7 @@ namespace GenesisChallenge.Domain.Models
         DateTime LastUpdatedOn { get; set; }
         string Name { get; set; }
         string Password { get; set; }
-        IList<int> Telephones { get; set; }
+        IEnumerable<int> Telephones { get; set; }
     }
 
     public class User : IUser
@@ -23,7 +23,7 @@ namespace GenesisChallenge.Domain.Models
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public IList<int> Telephones { get; set; }
+        public IEnumerable<int> Telephones { get; set; }
         public DateTime CreationOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }
         public DateTime LastLoginOn { get; set; }
