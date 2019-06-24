@@ -4,15 +4,7 @@
         <name>GenesisChallenge</name>
     </assembly>
     <members>
-        <member name="M:GenesisChallenge.Controllers.UserController.GetUser(System.Guid)">
-            <summary>
-            Gets a user by its id
-            </summary>
-            <returns>User or error message</returns>
-            <response code="200">The user was found</response>
-            <response code="404">User not found</response>
-        </member>
-        <member name="M:GenesisChallenge.Controllers.UserController.SignUp(GenesisChallenge.Dtos.SignUpDto)">
+        <member name="M:GenesisChallenge.Controllers.AuthenticationController.SignUp(GenesisChallenge.Dtos.SignUpDto)">
             <summary>
             Registers a new user
             </summary>
@@ -22,7 +14,7 @@
             <response code="409">Email already exists</response>
             <response code="500">Internal server error</response>
         </member>
-        <member name="M:GenesisChallenge.Controllers.UserController.SignIn(GenesisChallenge.Dtos.SignInDto)">
+        <member name="M:GenesisChallenge.Controllers.AuthenticationController.SignIn(GenesisChallenge.Dtos.SignInDto)">
             <summary>
             Logs the user in
             </summary>
@@ -32,6 +24,14 @@
             <response code="404">User not found</response>
             <response code="401">User not authorized</response>
             <response code="500">Internal server error</response>
+        </member>
+        <member name="M:GenesisChallenge.Controllers.UserController.GetUser(System.Guid)">
+            <summary>
+            Gets a user by its id
+            </summary>
+            <returns>User or error message</returns>
+            <response code="200">The user was found</response>
+            <response code="404">User not found</response>
         </member>
     </members>
 </doc>

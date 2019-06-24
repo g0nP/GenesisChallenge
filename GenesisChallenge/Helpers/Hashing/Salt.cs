@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-
 namespace GenesisChallenge.Helpers.Hashing
 {
     public class Salt
