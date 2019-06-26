@@ -1,6 +1,8 @@
 ﻿using GenesisChallenge.Domain.Models;
+using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Persistence;
 using GenesisChallenge.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -16,28 +18,24 @@ namespace GenesisChallenge.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private IList<User> _users = new List<User>
-        {
-            new User { Id = new Guid("0700c1be-5c95-4de2-a463-2703aa65c480"), Name = "Fred", Password = "123", Email = "fred@gmail.com", Telephones = new List<int> { 122, 333, 44 } },
-            new User { Id = new Guid("12cc5b02-9354-45b4-83fc-7c24996b59a4"), Name = "Alice", Password = "321", Email = "alice@gmail.com", Telephones = new List<int>()},
-            new User { Id = new Guid("08847a1e-50bb-4be6-ad0f-dba99dc9c637"), Name = "George", Password = "123", Email = "george@gmail.com", Telephones = new List<int> { 122 }},
-        };
-
+        private IRepositoryWrapper _repository;
         private IConfiguration _config;
 
-        public AuthenticationService(IConfiguration config)
+        public AuthenticationService(IConfiguration config, IRepositoryWrapper repository)
         {
             _config = config;
+            _repository = repository;
         }
 
         public ISignInResponse SignIn(SignInDto signInDto)
         {
             ValidateSignIn(signInDto);
 
-            var user = _users.Where(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
             user.LastLoginOn = DateTime.UtcNow;
-            //TODO: save login date
+            _repository.User.Update(user);
+            _repository.Save();
 
             var token = GenerateJSONWebToken(user);
 
@@ -57,19 +55,32 @@ namespace GenesisChallenge.Services
         {
             ValidateSignUp(signUpDto);
 
+            List<Telephone> telephones = null;
+
+            if (signUpDto != null)
+            {
+                telephones = new List<Telephone>();
+
+                foreach (var telephone in signUpDto.Telephones)
+                {
+                    telephones.Add(new Telephone { Number = telephone.Number });
+                }
+            }
+
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Name = signUpDto.Name,
                 Email = signUpDto.Email,
                 Password = signUpDto.Password,
-                Telephones = signUpDto.Telephones,
-                CreationOn = DateTime.UtcNow,
+                Telephones = telephones,
                 LastLoginOn = DateTime.UtcNow,
-                LastUpdatedOn = DateTime.UtcNow
+                LastUpdatedOn = DateTime.UtcNow,
+                CreationOn = DateTime.UtcNow,
             };
 
-            _users.Add(user);
+            _repository.User.Create(user);
+            _repository.Save();
 
             var token = GenerateJSONWebToken(user);
             var response = new SignUpResponse
@@ -100,7 +111,7 @@ namespace GenesisChallenge.Services
                 throw new ArgumentNullException(nameof(signInDto.Password));
             }
 
-            var user = _users.Where(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
             if (user == null)
             {
@@ -129,7 +140,7 @@ namespace GenesisChallenge.Services
                 throw new ArgumentNullException(nameof(signUpDto.Name));
             }
 
-            var user = _users.Where(u => string.Equals(u.Email, signUpDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signUpDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
             if (user != null)
             {
@@ -141,7 +152,7 @@ namespace GenesisChallenge.Services
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, userInfo.Email)
+                new Claim(ClaimTypes.Email, userInfo.Email)
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -150,7 +161,6 @@ namespace GenesisChallenge.Services
             var token = new JwtSecurityToken(
               issuer: _config["Jwt:Issuer"],
               claims: claims,
-              expires: DateTime.Now.AddMinutes(30),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

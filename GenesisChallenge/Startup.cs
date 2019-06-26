@@ -1,12 +1,16 @@
-﻿using GenesisChallenge.Domain;
+﻿using GenesisChallenge.DataAccess;
+using GenesisChallenge.Domain;
+using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Infrastructure;
+using GenesisChallenge.Persistence;
 using GenesisChallenge.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -31,6 +35,10 @@ namespace GenesisChallenge
                 options.Filters.Add(new CustomAuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
+            //TODO: move to appsettings
+            var connection = @"Server=(localdb)\mssqllocaldb;Database=GenesisChallenge.Db;Trusted_Connection=True;ConnectRetryCount=0";
+            services.AddDbContext<RepositoryContext> (options => options.UseSqlServer(connection));
+
             services.AddSwaggerConfiguration();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -48,6 +56,7 @@ namespace GenesisChallenge
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

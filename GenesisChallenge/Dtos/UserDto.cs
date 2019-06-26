@@ -4,25 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace GenesisChallenge.Responses
+namespace GenesisChallenge.Dtos
 {
-    public interface ISignUpResponse : IUser
+    public class UserDto
     {
-        string Token { get; set; }
-    }
-
-    public class SignUpResponse : ISignUpResponse
-    {
-        public string Token { get; set; }
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public IEnumerable<Telephone> Telephones { get; set; }
+        public IEnumerable<TelephoneDto> Telephones { get; set; }
         public DateTime CreationOn { get; set; }
-        public DateTime LastLoginOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }
-        
-       
+        public DateTime LastLoginOn { get; set; }
     }
 }

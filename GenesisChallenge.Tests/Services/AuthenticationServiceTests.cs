@@ -1,8 +1,13 @@
-﻿using GenesisChallenge.Domain.Services;
+﻿using GenesisChallenge.DataAccess;
+using GenesisChallenge.Domain.Models;
+using GenesisChallenge.Domain.Repositories;
+using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Persistence;
 using GenesisChallenge.Responses;
 using GenesisChallenge.Services;
 using Microsoft.Extensions.Configuration;
+using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -21,14 +26,18 @@ namespace GenesisChallenge.Tests.Services
                 .AddJsonFile("jwt.json")
                 .Build();
 
-                _authenticationService = new AuthenticationService(config);
+
+
+                _repository = new Mock<IRepositoryWrapper>();
+
+                _authenticationService = new AuthenticationService(config, _repository);
             }
 
             [Test]
             [TestCase("fred", "fred@email.com", "password", new int[] { 123456, 544522 }, Description = "Correct arguments with telephones list")]
             [TestCase("fred", "fred@email.com", "password", new int[] { }, Description = "Correct arguments with empty telephones list")]
             [TestCase("fred", "fred@email.com", "password", null, Description = "Correct arguments with null telephones list")]
-            public void ShouldCreateUserWhenSignUp(string name, string email, string password, IEnumerable<int> telephones)
+            public void ShouldCreateUserWhenSignUp(string name, string email, string password, IEnumerable<Telephone> telephones)
             {
                 GivenSignUpDto(name, email, password, telephones);
                 WhenSignUp();
@@ -42,7 +51,7 @@ namespace GenesisChallenge.Tests.Services
             [TestCase("fred", null, "password", new int[] { 123456, 544522 }, Description = "Null Email")]
             [TestCase("fred", "fred@email.com", "", new int[] { 123456, 544522 }, Description = "Empty Password")]
             [TestCase("fred", "fred@email.com", null, new int[] { 123456, 544522 }, Description = "Null Password")]
-            public void ShouldThrowArgumentNullExceptionWhenMissingSignUpArgument(string name, string email, string password, IEnumerable<int> telephones)
+            public void ShouldThrowArgumentNullExceptionWhenMissingSignUpArgument(string name, string email, string password, IEnumerable<Telephone> telephones)
             {
                 GivenSignUpDto(name, email, password, telephones);
                 ThenExceptionIsThrown<ArgumentNullException>(WhenSignUp);
@@ -51,7 +60,7 @@ namespace GenesisChallenge.Tests.Services
             [Ignore("Until persistence layer is created")]
             [Test]
             [TestCase("fred", "fred@email.com", "password", new int[] { 123456, 544522 })]
-            public void ShouldThrowEmailAlreadyExistsExceptionWhenEmailAlreadyExists(string name, string email, string password, IEnumerable<int> telephones)
+            public void ShouldThrowEmailAlreadyExistsExceptionWhenEmailAlreadyExists(string name, string email, string password, IEnumerable<Telephone> telephones)
             {
                 GivenSignUpDto(name, email, password, telephones);
                 ThenExceptionIsThrown<EmailAlreadyExistsException>(WhenSignUp);
@@ -96,7 +105,7 @@ namespace GenesisChallenge.Tests.Services
                 ThenExceptionIsThrown<InvalidPasswordException>(WhenSignIn);
             }
 
-            private void GivenSignUpDto(string name, string email, string password, IEnumerable<int> telephones)
+            private void GivenSignUpDto(string name, string email, string password, IEnumerable<Telephone> telephones)
             {
                 _signUpDto = new SignUpDto {
                     Name = name,
@@ -144,6 +153,7 @@ namespace GenesisChallenge.Tests.Services
             private static Guid[] RegisteredUserId = new Guid[] { new Guid("0700c1be-5c95-4de2-a463-2703aa65c480") };
             private static Guid[] NotRegisteredUserId = new Guid[] { new Guid("8497c1be-5c95-4de2-a463-2703aa65e784") };
 
+            private IRepositoryWrapper _repository;
             private IAuthenticationService _authenticationService;
             private SignUpDto _signUpDto;
             private ISignUpResponse _signUpResponse;

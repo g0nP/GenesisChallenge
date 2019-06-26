@@ -1,7 +1,5 @@
-﻿using System;
+﻿using GenesisChallenge.Domain.Models;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GenesisChallenge.Dtos
 {
@@ -10,6 +8,6 @@ namespace GenesisChallenge.Dtos
         public string Name { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-        public IEnumerable<int> Telephones { get; set; }
+        public IEnumerable<TelephoneDto> Telephones { get; set; }
     }
 }
