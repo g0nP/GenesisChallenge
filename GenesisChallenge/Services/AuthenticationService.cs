@@ -2,12 +2,11 @@
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
-using GenesisChallenge.Persistence;
+using GenesisChallenge.Mappers;
 using GenesisChallenge.Responses;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -34,15 +33,16 @@ namespace GenesisChallenge.Services
             var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
             user.LastLoginOn = DateTime.UtcNow;
+            user.LastUpdatedOn = DateTime.UtcNow;
+            user.Token = GenerateJSONWebToken(user);
+
             _repository.User.Update(user);
             _repository.Save();
-
-            var token = GenerateJSONWebToken(user);
 
             var response = new SignInResponse
             {
                 Id = user.Id,
-                Token = token,
+                Token = user.Token,
                 CreationOn = user.CreationOn,
                 LastLoginOn = user.LastLoginOn,
                 LastUpdatedOn = user.LastUpdatedOn
@@ -55,41 +55,31 @@ namespace GenesisChallenge.Services
         {
             ValidateSignUp(signUpDto);
 
-            List<Telephone> telephones = null;
-
-            if (signUpDto != null)
-            {
-                telephones = new List<Telephone>();
-
-                foreach (var telephone in signUpDto.Telephones)
-                {
-                    telephones.Add(new Telephone { Number = telephone.Number });
-                }
-            }
-
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Name = signUpDto.Name,
                 Email = signUpDto.Email,
                 Password = signUpDto.Password,
-                Telephones = telephones,
+                Telephones = TelephonesMapper.MapToTelephone(signUpDto.Telephones),
                 LastLoginOn = DateTime.UtcNow,
                 LastUpdatedOn = DateTime.UtcNow,
                 CreationOn = DateTime.UtcNow,
             };
 
+            var token = GenerateJSONWebToken(user);
+            user.Token = token;
+
             _repository.User.Create(user);
             _repository.Save();
 
-            var token = GenerateJSONWebToken(user);
             var response = new SignUpResponse
             {
                 Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Password = user.Password,
-                Telephones = user.Telephones,
+                Name = signUpDto.Name,
+                Email = signUpDto.Email,
+                Password = signUpDto.Password,
+                Telephones = signUpDto.Telephones,
                 Token = token,
                 CreationOn = user.CreationOn,
                 LastLoginOn = user.LastLoginOn,
@@ -152,7 +142,8 @@ namespace GenesisChallenge.Services
         {
             var claims = new[]
             {
-                new Claim(ClaimTypes.Email, userInfo.Email)
+                new Claim(ClaimTypes.Email, userInfo.Email),
+                //new Claim(JwtRegisteredClaimNames.Iat, userInfo.LastLoginOn.ToShortTimeString())
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

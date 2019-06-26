@@ -1,9 +1,7 @@
-﻿using GenesisChallenge.DataAccess;
-using GenesisChallenge.Domain.Models;
+﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
-using GenesisChallenge.Persistence;
 using GenesisChallenge.Responses;
 using GenesisChallenge.Services;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +9,8 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Tests.Services
@@ -22,92 +22,118 @@ namespace GenesisChallenge.Tests.Services
             [SetUp]
             public void Setup()
             {
-                var config = new ConfigurationBuilder()
+                _config = new ConfigurationBuilder()
                 .AddJsonFile("jwt.json")
                 .Build();
 
-
-
-                _repository = new Mock<IRepositoryWrapper>();
-
-                _authenticationService = new AuthenticationService(config, _repository);
+                _userRepository = new Mock<IUserRepository>();
+                _repositoryWrapper = new Mock<IRepositoryWrapper>();
             }
 
             [Test]
-            [TestCase("fred", "fred@email.com", "password", new int[] { 123456, 544522 }, Description = "Correct arguments with telephones list")]
-            [TestCase("fred", "fred@email.com", "password", new int[] { }, Description = "Correct arguments with empty telephones list")]
-            [TestCase("fred", "fred@email.com", "password", null, Description = "Correct arguments with null telephones list")]
-            public void ShouldCreateUserWhenSignUp(string name, string email, string password, IEnumerable<Telephone> telephones)
+            [TestCase("fred", "fred@email.com", "password", Description = "Correct arguments with telephones list")]
+            public void ShouldCreateUserWhenSignUpWithTelephones(string name, string email, string password)
             {
-                GivenSignUpDto(name, email, password, telephones);
+                GivenSignUpDto(name, email, password, _telephones);
+                GivenUserDoesntExist();
+                GivenAuthenticationService();
                 WhenSignUp();
                 ThenUserIsCreated();
             }
 
             [Test]
-            [TestCase("", "fred@email.com", "password", new int[] { 123456, 544522 }, Description = "Empty Name")]
-            [TestCase(null, "fred@email.com", "password", new int[] { 123456, 544522 }, Description = "Null Name")]
-            [TestCase("fred", "", "password", new int[] { 123456, 544522 }, Description = "Empty Email")]
-            [TestCase("fred", null, "password", new int[] { 123456, 544522 }, Description = "Null Email")]
-            [TestCase("fred", "fred@email.com", "", new int[] { 123456, 544522 }, Description = "Empty Password")]
-            [TestCase("fred", "fred@email.com", null, new int[] { 123456, 544522 }, Description = "Null Password")]
-            public void ShouldThrowArgumentNullExceptionWhenMissingSignUpArgument(string name, string email, string password, IEnumerable<Telephone> telephones)
+            [TestCase("fred", "fred@email.com", "password", Description = "Correct arguments with empty telephones list")]
+            public void ShouldCreateUserWhenSignUpWithEmptyTelephones(string name, string email, string password)
             {
-                GivenSignUpDto(name, email, password, telephones);
+                GivenSignUpDto(name, email, password, _telephonesEmpty);
+                GivenUserDoesntExist();
+                GivenAuthenticationService();
+                WhenSignUp();
+                ThenUserIsCreated();
+            }
+
+            [Test]
+            [TestCase("fred", "fred@email.com", "password", Description = "Correct arguments with null telephones list")]
+            public void ShouldCreateUserWhenSignUpWithNullTelephones(string name, string email, string password)
+            {
+                GivenSignUpDto(name, email, password, _telephonesNull);
+                GivenUserDoesntExist();
+                GivenAuthenticationService();
+                WhenSignUp();
+                ThenUserIsCreated();
+            }
+
+            [Test]
+            [TestCase("", "fred@email.com", "password", Description = "Empty Name")]
+            [TestCase(null, "fred@email.com", "password", Description = "Null Name")]
+            [TestCase("fred", "", "password", Description = "Empty Email")]
+            [TestCase("fred", null, "password", Description = "Null Email")]
+            [TestCase("fred", "fred@email.com", "", Description = "Empty Password")]
+            [TestCase("fred", "fred@email.com", null, Description = "Null Password")]
+            public void ShouldThrowArgumentNullExceptionWhenMissingSignUpArgument(string name, string email, string password)
+            {
+                GivenSignUpDto(name, email, password, _telephones);
+                GivenAuthenticationService();
                 ThenExceptionIsThrown<ArgumentNullException>(WhenSignUp);
             }
 
-            [Ignore("Until persistence layer is created")]
             [Test]
-            [TestCase("fred", "fred@email.com", "password", new int[] { 123456, 544522 })]
-            public void ShouldThrowEmailAlreadyExistsExceptionWhenEmailAlreadyExists(string name, string email, string password, IEnumerable<Telephone> telephones)
+            [TestCase("fred", "fred@email.com", "password")]
+            public void ShouldThrowEmailAlreadyExistsExceptionDuringSignUpWhenEmailAlreadyExists(string name, string email, string password)
             {
-                GivenSignUpDto(name, email, password, telephones);
+                GivenSignUpDto(name, email, password, _telephones);
+                GivenUserExists(email, password);
+                GivenAuthenticationService();
                 ThenExceptionIsThrown<EmailAlreadyExistsException>(WhenSignUp);
             }
 
-            [Ignore("Until persistence layer is created")]
             [Test]
-            [TestCase("fred", "fred@email.com", "password")]
+            [TestCase("fred@email.com", "password")]
             public void ShouldReturnRegisteredUserWhenSignIn(string email, string password)
             {
                 GivenSignInDto(email, password);
+                GivenUserExists(email, password);
+                GivenAuthenticationService();
                 WhenSignIn();
                 ThenRegisteredUserIsReturned();
             }
 
             [Test]
             [TestCase("", "password", Description = "Empty Email")]
-            [TestCase(null, "password",Description = "Null Email")]
+            [TestCase(null, "password", Description = "Null Email")]
             [TestCase("fred@email.com", "", Description = "Empty Password")]
             [TestCase("fred@email.com", null, Description = "Null Password")]
             public void ShouldThrowArgumentNullExceptionWhenMissingSignInArgument(string email, string password)
             {
                 GivenSignInDto(email, password);
+                GivenAuthenticationService();
                 ThenExceptionIsThrown<ArgumentNullException>(WhenSignIn);
             }
 
-            [Ignore("Until persistence layer is created")]
             [Test]
-            [TestCase("fred", "fred@email.com", "password")]
+            [TestCase("fred@email.com", "password")]
             public void ShouldThrowInexistentEmailExceptionWhenEmailDoesntExists(string email, string password)
             {
                 GivenSignInDto(email, password);
+                GivenUserDoesntExist();
+                GivenAuthenticationService();
                 ThenExceptionIsThrown<InexistentEmailException>(WhenSignIn);
             }
 
-            [Ignore("Until persistence layer is created")]
             [Test]
-            [TestCase("fred", "fred@email.com", "password")]
+            [TestCase("fred@email.com", "password")]
             public void ShouldThrowInvalidPasswordExceptionWhenIncorrectPassword(string email, string password)
             {
                 GivenSignInDto(email, password);
+                GivenUserExists(email, "zzz");
+                GivenAuthenticationService();
                 ThenExceptionIsThrown<InvalidPasswordException>(WhenSignIn);
             }
 
-            private void GivenSignUpDto(string name, string email, string password, IEnumerable<Telephone> telephones)
+            private void GivenSignUpDto(string name, string email, string password, IReadOnlyCollection<TelephoneDto> telephones)
             {
-                _signUpDto = new SignUpDto {
+                _signUpDto = new SignUpDto
+                {
                     Name = name,
                     Email = email,
                     Password = password,
@@ -122,6 +148,25 @@ namespace GenesisChallenge.Tests.Services
                     Email = email,
                     Password = password
                 };
+            }
+
+            private void GivenUserDoesntExist()
+            {
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_emptyDatabase);
+                _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
+            }
+
+            private void GivenUserExists(string email, string password)
+            {
+                var _databaseWithUser = new List<User> { new User { Email = email, Password = password } }.AsQueryable();
+
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_databaseWithUser);
+                _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
+            }
+
+            private void GivenAuthenticationService()
+            {
+                _authenticationService = new AuthenticationService(_config, _repositoryWrapper.Object);
             }
 
             private void WhenSignUp()
@@ -140,7 +185,17 @@ namespace GenesisChallenge.Tests.Services
                 Assert.IsTrue(string.Equals(_signUpResponse.Name, _signUpDto.Name, StringComparison.OrdinalIgnoreCase));
                 Assert.IsTrue(string.Equals(_signUpResponse.Email, _signUpDto.Email, StringComparison.OrdinalIgnoreCase));
                 Assert.IsTrue(string.Equals(_signUpResponse.Password, _signUpDto.Password, StringComparison.OrdinalIgnoreCase));
-                Assert.That(_signUpResponse.Telephones == _signUpDto.Telephones);
+
+                if (_signUpDto.Telephones == null)
+                {
+                    Assert.IsTrue(_signUpResponse.Telephones == null);
+                }
+                else
+                {
+                    Assert.IsTrue(_signUpResponse.Telephones.Count() == _signUpDto.Telephones.Count());
+                    CollectionAssert.AreEquivalent(_signUpDto.Telephones, _signUpResponse.Telephones);
+                }
+
                 Assert.That(!string.IsNullOrWhiteSpace(_signUpResponse.Token));
             }
 
@@ -153,7 +208,15 @@ namespace GenesisChallenge.Tests.Services
             private static Guid[] RegisteredUserId = new Guid[] { new Guid("0700c1be-5c95-4de2-a463-2703aa65c480") };
             private static Guid[] NotRegisteredUserId = new Guid[] { new Guid("8497c1be-5c95-4de2-a463-2703aa65e784") };
 
-            private IRepositoryWrapper _repository;
+            private readonly IReadOnlyCollection<TelephoneDto> _telephones = new List<TelephoneDto> { new TelephoneDto { Number = 555 }, new TelephoneDto { Number = 456 }, new TelephoneDto { Number = 789 } };
+            private readonly IReadOnlyCollection<TelephoneDto> _telephonesEmpty = new List<TelephoneDto>();
+            private readonly IReadOnlyCollection<TelephoneDto> _telephonesNull = null;
+            private readonly IQueryable<User> _emptyDatabase = new List<User>().AsQueryable();
+
+
+            private IConfigurationRoot _config;
+            private Mock<IUserRepository> _userRepository;
+            private Mock<IRepositoryWrapper> _repositoryWrapper;
             private IAuthenticationService _authenticationService;
             private SignUpDto _signUpDto;
             private ISignUpResponse _signUpResponse;

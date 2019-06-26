@@ -16,7 +16,7 @@ namespace GenesisChallenge.Domain.Models
         string Name { get; set; }
         string Password { get; set; }
         string Token { get; set; }
-        IEnumerable<Telephone> Telephones { get; set; }
+        IReadOnlyCollection<Telephone> Telephones { get; set; }
     }
 
     public class User : IUser
@@ -30,7 +30,7 @@ namespace GenesisChallenge.Domain.Models
         public string Password { get; set; }
         [Required]
         public string Token { get; set; }
-        public IEnumerable<Telephone> Telephones { get; set; }
+        public IReadOnlyCollection<Telephone> Telephones { get; set; }
         public DateTime CreationOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }
         public DateTime LastLoginOn { get; set; }
