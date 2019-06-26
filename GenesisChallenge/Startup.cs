@@ -48,8 +48,7 @@ namespace GenesisChallenge
                 {
                     ValidateIssuer = true,
                     ValidIssuer = Configuration["Jwt:Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = Configuration["Jwt:Issuer"],
+                    ValidateAudience = false,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
                 };

@@ -57,7 +57,6 @@ namespace GenesisChallenge.Services
 
             var user = new User
             {
-                Id = Guid.NewGuid(),
                 Name = signUpDto.Name,
                 Email = signUpDto.Email,
                 Password = signUpDto.Password,
@@ -143,7 +142,7 @@ namespace GenesisChallenge.Services
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email, userInfo.Email),
-                //new Claim(JwtRegisteredClaimNames.Iat, userInfo.LastLoginOn.ToShortTimeString())
+                new Claim(JwtRegisteredClaimNames.Iat, userInfo.LastLoginOn.ToShortTimeString())
             };
 
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
@@ -152,6 +151,7 @@ namespace GenesisChallenge.Services
             var token = new JwtSecurityToken(
               issuer: _config["Jwt:Issuer"],
               claims: claims,
+              expires: userInfo.LastLoginOn.AddMinutes(30),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
