@@ -30,8 +30,11 @@
             Gets a user by its id
             </summary>
             <returns>User or error message</returns>
+            <param name="id">The user id to search</param>
             <response code="200">The user was found</response>
+            <response code="401">Not authorized</response>
             <response code="404">User not found</response>
+            <response code="500">Internal server error</response>
         </member>
     </members>
 </doc>

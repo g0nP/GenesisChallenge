@@ -1,10 +1,14 @@
-﻿using GenesisChallenge.Domain.Services;
+﻿using GenesisChallenge.Domain;
+using GenesisChallenge.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 
 namespace GenesisChallenge.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -21,8 +25,11 @@ namespace GenesisChallenge.Controllers
         /// Gets a user by its id
         /// </summary>
         /// <returns>User or error message</returns>
+        /// <param name="id">The user id to search</param>
         /// <response code="200">The user was found</response>
+        /// <response code="401">Not authorized</response>
         /// <response code="404">User not found</response>
+        /// <response code="500">Internal server error</response>
         [HttpGet("{id}")]
         public IActionResult GetUser(Guid id)
         {
@@ -35,11 +42,11 @@ namespace GenesisChallenge.Controllers
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(ex.Message);
+                return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

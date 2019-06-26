@@ -1,11 +1,16 @@
-﻿using GenesisChallenge.Domain.Services;
+﻿using GenesisChallenge.Domain;
+using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace GenesisChallenge
 {
@@ -21,16 +26,25 @@ namespace GenesisChallenge
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            services.AddSwaggerGen(c =>
+            services.AddMvc(options =>
             {
-                c.SwaggerDoc("v1", new Info { Title = "GenesisChallenge", Description = "User Management API" });
+                options.Filters.Add(new CustomAuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-                var path = System.AppDomain.CurrentDomain.BaseDirectory + @"GenesisChallenge.xml";
-                c.IncludeXmlComments(path);
-            }
-            );
+            services.AddSwaggerConfiguration();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(cfg =>
+            {
+                cfg.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
+                };
+            });
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IUserService, UserService>();
@@ -42,16 +56,17 @@ namespace GenesisChallenge
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseSwaggerConfiguration();
             }
             else
             {
                 app.UseHsts();
             }
 
+            app.UseAuthentication();
+
             app.UseHttpsRedirection();
             app.UseMvc();
-            app.UseSwagger();
-            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", ""); });
-        }
+        } 
     }
 }

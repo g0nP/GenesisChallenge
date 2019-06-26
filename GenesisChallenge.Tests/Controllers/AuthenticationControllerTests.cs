@@ -25,7 +25,8 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignUpResponse();
             GivenUserController();
             WhenSignUp();
-            ThenOkIsReturned<SignUpResponse>();
+            ThenOkStatusCodeIsReturned();
+            ThenCorrectTypeIsReturned<SignUpResponse>();
         }
 
         [Test]
@@ -34,7 +35,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignUpThrowsArgumentNullException();
             GivenUserController();
             WhenSignUp();
-            ThenBadRequestIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -43,7 +44,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignUpThrowsEmailAlreadyExistsException();
             GivenUserController();
             WhenSignUp();
-            ThenConflictIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status409Conflict);
         }
 
         [Test]
@@ -52,7 +53,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignUpThrowsException();
             GivenUserController();
             WhenSignUp();
-            ThenInternalServerErrorIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status500InternalServerError);
         }
 
         [Test]
@@ -61,7 +62,8 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignInResponse();
             GivenUserController();
             WhenSignIn();
-            ThenOkIsReturned<SignInResponse>();
+            ThenOkStatusCodeIsReturned();
+            ThenCorrectTypeIsReturned<SignInResponse>();
         }
 
         [Test]
@@ -70,7 +72,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignInThrowsArgumentNullException();
             GivenUserController();
             WhenSignIn();
-            ThenBadRequestIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status400BadRequest);
         }
 
         [Test]
@@ -79,7 +81,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignInThrowsInexistentEmailException();
             GivenUserController();
             WhenSignIn();
-            ThenNotFoundIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status404NotFound);
         }
 
         [Test]
@@ -88,7 +90,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignInThrowsInvalidPasswordException();
             GivenUserController();
             WhenSignIn();
-            ThenUnauthorizedIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status401Unauthorized);
         }
 
         [Test]
@@ -97,7 +99,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenSignInThrowsException();
             GivenUserController();
             WhenSignIn();
-            ThenInternalServerErrorIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status500InternalServerError);
         }
 
         private void GivenSignUpResponse()
@@ -162,53 +164,28 @@ namespace GenesisChallenge.Tests.Controllers
             _actionResult = _authenticationController.SignIn(_signInDto);
         }
 
-        private void ThenOkIsReturned<T>()
+        private void ThenCorrectTypeIsReturned<T>()
         {
-            var result = _actionResult as OkObjectResult;
+            var result = _actionResult as ObjectResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status200OK);
             Assert.IsInstanceOf<T>(result.Value);
         }
 
-        private void ThenBadRequestIsReturned()
-        {
-            var result = _actionResult as BadRequestObjectResult;
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status400BadRequest);
-        }
-
-        private void ThenConflictIsReturned()
-        {
-            var result = _actionResult as ConflictObjectResult;
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status409Conflict);
-        }
-
-        private void ThenNotFoundIsReturned()
-        {
-            var result = _actionResult as NotFoundObjectResult;
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status404NotFound);
-        }
-
-        private void ThenUnauthorizedIsReturned()
+        private void ThenOkStatusCodeIsReturned()
         {
             var result = _actionResult as ObjectResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status401Unauthorized);
+            Assert.AreEqual(result.StatusCode, StatusCodes.Status200OK);
         }
 
-        private void ThenInternalServerErrorIsReturned()
+        private void ThenErrorStatusCodeIsReturned(int statusCode)
         {
-            var result = _actionResult as ObjectResult;
+            var result = _actionResult as JsonResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status500InternalServerError);
+            Assert.AreEqual(result.StatusCode, statusCode);
         }
 
         private static DateTime[] DateTimeValue = new DateTime[] { DateTime.UtcNow };

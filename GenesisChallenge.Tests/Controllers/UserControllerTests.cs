@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace GenesisChallenge.Tests.Controllers
 {
-    public class UserControllerTests
+    public class UserControllerTests : Test
     {
         [SetUp]
         public void Setup()
@@ -24,7 +24,8 @@ namespace GenesisChallenge.Tests.Controllers
             GivenGetUserResponse();
             GivenUserController();
             WhenGetUser();
-            ThenOkIsReturned<IUser>();
+            ThenOkStatusCodeIsReturned();
+            ThenCorrectTypeIsReturned<IUser>();
         }
 
         [Test]
@@ -33,7 +34,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenGetUserThrowsKeyNotFoundException();
             GivenUserController();
             WhenGetUser();
-            ThenNotFoundIsReturned();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status404NotFound);
         }
 
         private void GivenGetUserResponse()
@@ -57,29 +58,28 @@ namespace GenesisChallenge.Tests.Controllers
             _actionResult = _userController.GetUser(_userId);
         }
 
-        private void ThenOkIsReturned<T>()
-        {
-            var result = _actionResult as OkObjectResult;
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status200OK);
-            Assert.IsInstanceOf<T>(result.Value);
-        }
-
-        private void ThenNotFoundIsReturned()
-        {
-            var result = _actionResult as NotFoundObjectResult;
-
-            Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status404NotFound);
-        }
-
-        private void ThenInternalServerErrorIsReturned()
+        private void ThenCorrectTypeIsReturned<T>()
         {
             var result = _actionResult as ObjectResult;
 
             Assert.IsNotNull(result);
-            Assert.AreEqual(result.StatusCode, StatusCodes.Status500InternalServerError);
+            Assert.IsInstanceOf<T>(result.Value);
+        }
+
+        private void ThenOkStatusCodeIsReturned()
+        {
+            var result = _actionResult as ObjectResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.StatusCode, StatusCodes.Status200OK);
+        }
+
+        private void ThenErrorStatusCodeIsReturned(int statusCode)
+        {
+            var result = _actionResult as JsonResult;
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(result.StatusCode, statusCode);
         }
 
         private static DateTime[] DateTimeValue = new DateTime[] { DateTime.UtcNow };

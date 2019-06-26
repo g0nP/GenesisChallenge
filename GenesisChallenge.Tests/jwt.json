@@ -1,10 +1,4 @@
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Warning"
-    }
-  },
-  "AllowedHosts": "*",
   "Jwt": {
     "Key": "bf7596bf-e1bd-4141-a1a9-d943812d5ee5",
     "Issuer": "SecretBroker"

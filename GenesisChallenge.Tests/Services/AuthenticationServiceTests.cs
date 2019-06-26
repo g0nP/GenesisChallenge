@@ -2,6 +2,7 @@
 using GenesisChallenge.Dtos;
 using GenesisChallenge.Responses;
 using GenesisChallenge.Services;
+using Microsoft.Extensions.Configuration;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,11 @@ namespace GenesisChallenge.Tests.Services
             [SetUp]
             public void Setup()
             {
-                _authenticationService = new AuthenticationService();
+                var config = new ConfigurationBuilder()
+                .AddJsonFile("jwt.json")
+                .Build();
+
+                _authenticationService = new AuthenticationService(config);
             }
 
             [Test]

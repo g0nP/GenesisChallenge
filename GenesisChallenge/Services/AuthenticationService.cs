@@ -2,9 +2,14 @@
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
 using GenesisChallenge.Responses;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Services
@@ -18,6 +23,13 @@ namespace GenesisChallenge.Services
             new User { Id = new Guid("08847a1e-50bb-4be6-ad0f-dba99dc9c637"), Name = "George", Password = "123", Email = "george@gmail.com", Telephones = new List<int> { 122 }},
         };
 
+        private IConfiguration _config;
+
+        public AuthenticationService(IConfiguration config)
+        {
+            _config = config;
+        }
+
         public ISignInResponse SignIn(SignInDto signInDto)
         {
             ValidateSignIn(signInDto);
@@ -27,7 +39,7 @@ namespace GenesisChallenge.Services
             user.LastLoginOn = DateTime.UtcNow;
             //TODO: save login date
 
-            var token = "JWT token";
+            var token = GenerateJSONWebToken(user);
 
             var response = new SignInResponse
             {
@@ -59,7 +71,7 @@ namespace GenesisChallenge.Services
 
             _users.Add(user);
 
-            var token = "JWT token";
+            var token = GenerateJSONWebToken(user);
             var response = new SignUpResponse
             {
                 Id = user.Id,
@@ -123,6 +135,25 @@ namespace GenesisChallenge.Services
             {
                 throw new EmailAlreadyExistsException("E-mail already exists");
             }
+        }
+
+        private string GenerateJSONWebToken(IUser userInfo)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, userInfo.Email)
+            };
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+              issuer: _config["Jwt:Issuer"],
+              claims: claims,
+              expires: DateTime.Now.AddMinutes(30),
+              signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

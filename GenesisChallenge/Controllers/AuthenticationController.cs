@@ -1,11 +1,15 @@
-﻿using GenesisChallenge.Domain.Services;
+﻿using GenesisChallenge.Domain;
+using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Controllers
 {
+    [AllowAnonymous]
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
@@ -38,15 +42,15 @@ namespace GenesisChallenge.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(ex.Message);
+                return new CustomErrorResult(StatusCodes.Status400BadRequest, ex.Message);
             }
             catch (EmailAlreadyExistsException ex)
             {
-                return Conflict(ex.Message);
+                return new CustomErrorResult(StatusCodes.Status409Conflict, ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
 
@@ -71,19 +75,19 @@ namespace GenesisChallenge.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return BadRequest(ex.Message);
+                return new CustomErrorResult(StatusCodes.Status400BadRequest, ex.Message);
             }
             catch (InexistentEmailException ex)
             {
-                return NotFound(ex.Message);
+                return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
             }
             catch (InvalidPasswordException ex)
             {
-                return StatusCode(401, ex.Message);
+                return new CustomErrorResult(StatusCodes.Status401Unauthorized, ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }
