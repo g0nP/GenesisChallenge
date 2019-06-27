@@ -27,7 +27,7 @@ namespace GenesisChallenge.Services
 
         public UserDto GetUser(Guid userId, string accessToken)
         {
-            var user = _repository.User.FindByCondition(x => x.Id == userId).SingleOrDefault();
+            var user = _repository.User.FindByCondition(x => x.Id == userId, true).SingleOrDefault();
 
             ValidateUser(user, accessToken);
 

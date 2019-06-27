@@ -12,8 +12,21 @@ namespace GenesisChallenge.Domain.Repositories
     /// </remarks>
     public interface IRepositoryBase<T>
     {
-        IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression);
+        /// <summary>
+        /// Finds and entity by a given condition
+        /// </summary>
+        /// <param name="expression">Condition to search by</param>
+        /// <param name="includeRelationships">Includes or not every relationship data of the entity</param>
+        IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool includeRelationships = false);
+
+        /// <summary>
+        /// Creates a new entity
+        /// </summary>
         void Create(T entity);
+
+        /// <summary>
+        /// Updates an existing entity
+        /// </summary>
         void Update(T entity);
     }
 }

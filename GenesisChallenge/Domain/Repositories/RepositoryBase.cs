@@ -24,9 +24,17 @@ namespace GenesisChallenge.Domain.Repositories
         /// <summary>
         /// Finds and entity by a given condition
         /// </summary>
-        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression)
+        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool includeRelationships = false)
         {
-            return this.RepositoryContext.Set<T>().Where(expression).AsNoTracking();
+            var query = this.RepositoryContext.Set<T>().Where(expression);
+
+            if (includeRelationships)
+            {
+                foreach (var property in this.RepositoryContext.Model.FindEntityType(typeof(T)).GetNavigations())
+                    query = query.Include(property.Name);
+            }
+            
+            return query;
         }
 
         /// <summary>
