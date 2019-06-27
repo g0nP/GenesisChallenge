@@ -7,8 +7,16 @@ using System.Text;
 
 namespace GenesisChallenge.Helpers
 {
+    /// <summary>
+    /// Encapsulates methods related to Json Web Token
+    /// </summary>
     public static class JwtHelper
     {
+        /// <summary>
+        /// Generates a new JWT
+        /// </summary>
+        /// <param name="config">Source to obtain JWT configuration (Key and Issuer)</param>
+        /// <param name="userInfo">User information to generate claims to add to the token</param>
         public static string GenerateJSONWebToken(IConfiguration config, IUser userInfo)
         {
             var claims = new[]

@@ -4,6 +4,7 @@ using GenesisChallenge.Dtos;
 using GenesisChallenge.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -17,6 +18,7 @@ namespace GenesisChallenge.Tests.Controllers
         public void Setup()
         {
             _authenticationServiceMock = new Mock<IAuthenticationService>();
+            _loggingServiceMock = new Mock<ILogger<AuthenticationController>>(); ;
         }
 
         [Test]
@@ -151,7 +153,7 @@ namespace GenesisChallenge.Tests.Controllers
 
         private void GivenUserController()
         {
-            _authenticationController = new AuthenticationController(_authenticationServiceMock.Object);
+            _authenticationController = new AuthenticationController(_authenticationServiceMock.Object, _loggingServiceMock.Object);
         }
 
         private void WhenSignUp()
@@ -195,6 +197,7 @@ namespace GenesisChallenge.Tests.Controllers
 
         private AuthenticationController _authenticationController;
         private Mock<IAuthenticationService> _authenticationServiceMock;
+        private Mock<ILogger<AuthenticationController>> _loggingServiceMock;
         private ISignUpResponse _signUpResponse;
         private ISignInResponse _signInResponse;
         private IActionResult _actionResult;

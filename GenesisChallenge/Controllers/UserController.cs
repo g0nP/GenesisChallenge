@@ -3,11 +3,18 @@ using GenesisChallenge.Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 
 namespace GenesisChallenge.Controllers
 {
+    /// <summary>
+    /// Manages User actions
+    /// </summary>
+    /// <remarks>
+    /// Provides an endpoint for searching for a user
+    /// </remarks>
     [Authorize]
     [Route("api/[controller]")]
     [Produces("application/json")]
@@ -15,10 +22,12 @@ namespace GenesisChallenge.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, ILogger<UserController> logger)
         {
             _userService = userService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -43,14 +52,17 @@ namespace GenesisChallenge.Controllers
             }
             catch (KeyNotFoundException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
             }
             catch (UnauthorizedAccessException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status401Unauthorized, ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }

@@ -5,8 +5,14 @@ using System.Collections.Generic;
 
 namespace GenesisChallenge.Infrastructure
 {
+    /// <summary>
+    /// Encapsulates the configuration necessary to use Swagger
+    /// </summary>
     public static class SwaggerServiceExtensions
     {
+        /// <summary>
+        /// Add the Swagger configuration
+        /// </summary>
         public static IServiceCollection AddSwaggerConfiguration(this IServiceCollection services)
         {
             services.AddSwaggerGen(c =>
@@ -32,6 +38,9 @@ namespace GenesisChallenge.Infrastructure
             return services;
         }
 
+        /// <summary>
+        /// Applies the Swagger configuration
+        /// </summary>
         public static IApplicationBuilder UseSwaggerConfiguration(this IApplicationBuilder app)
         {
             app.UseSwagger();

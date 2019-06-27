@@ -1,11 +1,13 @@
 ﻿using GenesisChallenge.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GenesisChallenge.Domain.Repositories
 {
+    /// <summary>
+    /// Interface for the User repository
+    /// </summary>
+    /// <remarks>
+    /// Encapsulates the data access operation for a User
+    /// </remarks>
     public interface IUserRepository : IRepositoryBase<User>
     {
     }

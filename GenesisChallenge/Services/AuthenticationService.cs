@@ -14,6 +14,9 @@ using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Services
 {
+    /// <summary>
+    /// Implements IAuthenticationService
+    /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
         private IRepositoryWrapper _repository;
@@ -29,9 +32,8 @@ namespace GenesisChallenge.Services
 
         public ISignInResponse SignIn(SignInDto signInDto)
         {
-            ValidateSignIn(signInDto);
 
-            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = ValidateSignIn(signInDto);
 
             user.LastLoginOn = _systemClock.GetCurrentTime();
             user.LastUpdatedOn = _systemClock.GetCurrentTime();
@@ -66,7 +68,7 @@ namespace GenesisChallenge.Services
                 Email = signUpDto.Email,
                 Salt = salt,
                 Password = Hash.Create(signUpDto.Password, salt),
-                Telephones = TelephonesMapper.MapToTelephone(signUpDto.Telephones),
+                Telephones = TelephoneMapper.MapToTelephone(signUpDto.Telephones),
                 LastLoginOn = _systemClock.GetCurrentTime(),
                 LastUpdatedOn = _systemClock.GetCurrentTime(),
                 CreationOn = _systemClock.GetCurrentTime(),
@@ -94,7 +96,7 @@ namespace GenesisChallenge.Services
             return response;
         }
 
-        private void ValidateSignIn(SignInDto signInDto)
+        private User ValidateSignIn(SignInDto signInDto)
         {
             if (string.IsNullOrWhiteSpace(signInDto.Email))
             {
@@ -115,6 +117,8 @@ namespace GenesisChallenge.Services
             {
                 throw new InvalidPasswordException("Invalid user and / or password");
             }
+
+            return user;
         }
 
         private void ValidateSignUp(SignUpDto signUpDto)

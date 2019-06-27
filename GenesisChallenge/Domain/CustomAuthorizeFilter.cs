@@ -1,5 +1,4 @@
-﻿using GenesisChallenge.Domain;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +11,12 @@ using System.Threading.Tasks;
 
 namespace GenesisChallenge.Domain
 {
+    /// <summary>
+    /// Custom authorization filter for the JWT authentication
+    /// </summary>
+    /// <remarks>
+    /// Captures a failed JWT authentication and returns a custom error result
+    /// </remarks>
     public class CustomAuthorizeFilter : IAsyncAuthorizationFilter
     {
         public AuthorizationPolicy Policy { get; }

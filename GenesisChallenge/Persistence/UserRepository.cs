@@ -4,6 +4,9 @@ using GenesisChallenge.Domain.Repositories;
 
 namespace GenesisChallenge.Persistence
 {
+    /// <summary>
+    /// Implements IUserRepository
+    /// </summary>
     public class UserRepository : RepositoryBase<User>, IUserRepository
     {
         public UserRepository(RepositoryContext repositoryContext)

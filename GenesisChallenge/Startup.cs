@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -25,6 +27,7 @@ namespace GenesisChallenge
     {
         public Startup(IConfiguration configuration)
         {
+            Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
             Configuration = configuration;
         }
 
@@ -38,9 +41,8 @@ namespace GenesisChallenge
                 options.Filters.Add(new CustomAuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
             }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-            //TODO: move to appsettings
-            var connection = @"Server=(localdb)\mssqllocaldb;Database=GenesisChallenge.Db;Trusted_Connection=True;ConnectRetryCount=0";
-            services.AddDbContext<RepositoryContext> (options => options.UseSqlServer(connection));
+            var connectionString = Configuration["Server:ConnectionString"];
+            services.AddDbContext<RepositoryContext>(options => options.UseSqlServer(connectionString));
 
             services.AddSwaggerConfiguration();
 
@@ -82,7 +84,7 @@ namespace GenesisChallenge
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -97,7 +99,8 @@ namespace GenesisChallenge
             app.UseAuthentication();
 
             app.UseHttpsRedirection();
+            loggerFactory.AddSerilog();
             app.UseMvc();
-        } 
+        }
     }
 }

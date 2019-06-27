@@ -1,11 +1,10 @@
-﻿using GenesisChallenge.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace GenesisChallenge.Responses
 {
+    /// <summary>
+    /// Encapsulates the data for the Sign In response
+    /// </summary>
     public interface ISignInResponse
     {
         DateTime CreationOn { get; set; }
@@ -15,6 +14,9 @@ namespace GenesisChallenge.Responses
         string Token { get; set; }
     }
 
+    /// <summary>
+    /// Implements ISignInResponse
+    /// </summary>
     public class SignInResponse : ISignInResponse
     {
         public Guid Id { get; set; }

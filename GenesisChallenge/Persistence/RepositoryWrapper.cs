@@ -3,6 +3,9 @@ using GenesisChallenge.Domain.Repositories;
 
 namespace GenesisChallenge.Persistence
 {
+    /// <summary>
+    /// Implements IRepositoryWrapper
+    /// </summary>
     public class RepositoryWrapper : IRepositoryWrapper
     {
         private RepositoryContext _repoContext;

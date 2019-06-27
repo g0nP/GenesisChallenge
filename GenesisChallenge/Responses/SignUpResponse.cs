@@ -1,12 +1,12 @@
-﻿using GenesisChallenge.Domain.Models;
-using GenesisChallenge.Dtos;
+﻿using GenesisChallenge.Dtos;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GenesisChallenge.Responses
 {
+    /// <summary>
+    /// Encapsulates the data for the Sign Up response
+    /// </summary>
     public interface ISignUpResponse
     {
         DateTime CreationOn { get; set; }
@@ -20,6 +20,9 @@ namespace GenesisChallenge.Responses
         IReadOnlyCollection<TelephoneDto> Telephones { get; set; }
     }
 
+    /// <summary>
+    /// Implements ISignUpResponse
+    /// </summary>
     public class SignUpResponse : ISignUpResponse
     {
         public string Token { get; set; }

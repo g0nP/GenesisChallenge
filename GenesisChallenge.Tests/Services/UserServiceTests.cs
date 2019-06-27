@@ -1,6 +1,7 @@
 ﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Dtos;
 using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Services;
@@ -120,7 +121,7 @@ namespace GenesisChallenge.Tests.Services
             {
                 _userService = new UserService(_repositoryWrapper.Object, _systemClock.Object);
             }
-            
+
             private void WhenGetUser()
             {
                 _foundUser = _userService.GetUser(_userId, _token);
@@ -129,7 +130,6 @@ namespace GenesisChallenge.Tests.Services
             private void ThenUserIsFound()
             {
                 Assert.IsNotNull(_foundUser);
-                Assert.That(_foundUser.Id == _userId);
             }
 
             private readonly Guid SomeUserId = new Guid("8497c1be-5c95-4de2-a463-2703aa65e784");
@@ -140,7 +140,6 @@ namespace GenesisChallenge.Tests.Services
             private readonly string _exceptionMessageForDifferentTokens = "Unauthorized";
             private readonly string _exceptionMessageForExpiredSession = "Invalid Session";
 
-
             private DateTime _aDateTime30MinAfterUserLogIn;
             private DateTime _aDateTimeLessThan30MinAfterUserLogIn;
             private IUserService _userService;
@@ -149,7 +148,7 @@ namespace GenesisChallenge.Tests.Services
             private Mock<IRepositoryWrapper> _repositoryWrapper;
             private Guid _userId;
             private string _token;
-            private IUser _foundUser;
+            private UserDto _foundUser;
         }
     }
 }

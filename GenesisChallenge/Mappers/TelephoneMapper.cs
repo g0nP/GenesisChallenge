@@ -1,13 +1,18 @@
 ﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Dtos;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace GenesisChallenge.Mappers
 {
-    public static class TelephonesMapper
+    /// <summary>
+    /// Allows mapping between the classes Telephone and TelephoneDto
+    /// </summary>
+    public static class TelephoneMapper
     {
+        /// <summary>
+        /// Maps a collection of Telephone to a collection of TelephoneDto
+        /// </summary>
+        /// <param name="telephones">Collection of Telephone to be mapped</param>
         public static IReadOnlyCollection<TelephoneDto> MapToTelephoneDto(IReadOnlyCollection<Telephone> telephones)
         {
             IReadOnlyCollection<TelephoneDto> _telephonesDto = null;
@@ -26,6 +31,10 @@ namespace GenesisChallenge.Mappers
             return _telephonesDto;
         }
 
+        /// <summary>
+        /// Maps a collection of TelephoneDto to a collection of Telephone
+        /// </summary>
+        /// <param name="telephonesDto">Collection of TelephoneDto to be mapped</param>
         public static IReadOnlyCollection<Telephone> MapToTelephone(IReadOnlyCollection<TelephoneDto> telephonesDto)
         {
             IReadOnlyCollection<Telephone> _telephones = null;

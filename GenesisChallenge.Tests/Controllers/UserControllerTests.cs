@@ -1,8 +1,10 @@
 ﻿using GenesisChallenge.Controllers;
 using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -17,6 +19,7 @@ namespace GenesisChallenge.Tests.Controllers
         public void Setup()
         {
             _userServiceMock = new Mock<IUserService>();
+            _loggingServiceMock = new Mock<ILogger<UserController>>();
         }
 
         [Test]
@@ -27,7 +30,7 @@ namespace GenesisChallenge.Tests.Controllers
             GivenUserController();
             WhenGetUser();
             ThenOkStatusCodeIsReturned();
-            ThenCorrectTypeIsReturned<IUser>();
+            ThenCorrectTypeIsReturned<UserDto>();
         }
 
         [Test]
@@ -62,8 +65,8 @@ namespace GenesisChallenge.Tests.Controllers
 
         private void GivenGetUserResponse()
         {
-            _user = new User();
-            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Returns(_user);
+            _userDto = new UserDto();
+            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Returns(_userDto);
         }
 
         private void GivenToken(string token)
@@ -88,7 +91,7 @@ namespace GenesisChallenge.Tests.Controllers
 
         private void GivenUserController()
         {
-            _userController = new UserController(_userServiceMock.Object);
+            _userController = new UserController(_userServiceMock.Object, _loggingServiceMock.Object);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             var userMock = new Mock<ClaimsPrincipal>();
@@ -138,7 +141,8 @@ namespace GenesisChallenge.Tests.Controllers
 
         private UserController _userController;
         private Mock<IUserService> _userServiceMock;
-        private IUser _user;
+        private Mock<ILogger<UserController>> _loggingServiceMock;
+        private UserDto _userDto;
         private string _token;
         private IActionResult _actionResult;
     }

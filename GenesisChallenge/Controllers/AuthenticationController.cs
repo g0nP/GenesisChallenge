@@ -4,11 +4,18 @@ using GenesisChallenge.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Controllers
 {
+    /// <summary>
+    /// Manages User authentication
+    /// </summary>
+    /// <remarks>
+    /// Provides endpoints for signing up and signing in
+    /// </remarks>
     [AllowAnonymous]
     [Route("api/[controller]")]
     [Produces("application/json")]
@@ -16,10 +23,12 @@ namespace GenesisChallenge.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly ILogger<AuthenticationController> _logger;
 
-        public AuthenticationController(IAuthenticationService authenticationService)
+        public AuthenticationController(IAuthenticationService authenticationService, ILogger<AuthenticationController> logger)
         {
             _authenticationService = authenticationService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -42,14 +51,17 @@ namespace GenesisChallenge.Controllers
             }
             catch (ArgumentNullException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status400BadRequest, ex.Message);
             }
             catch (EmailAlreadyExistsException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status409Conflict, ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
@@ -75,18 +87,22 @@ namespace GenesisChallenge.Controllers
             }
             catch (ArgumentNullException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status400BadRequest, ex.Message);
             }
             catch (InexistentEmailException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
             }
             catch (InvalidPasswordException ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status401Unauthorized, ex.Message);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }

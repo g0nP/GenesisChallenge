@@ -1,14 +1,19 @@
 ﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Dtos;
 using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
+using GenesisChallenge.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GenesisChallenge.Services
 {
+    /// <summary>
+    /// Implements IUserService
+    /// </summary>
     public class UserService : IUserService
     {
         private IRepositoryWrapper _repository;
@@ -20,13 +25,13 @@ namespace GenesisChallenge.Services
             _systemClock = systemClock;
         }
 
-        public IUser GetUser(Guid userId, string accessToken)
+        public UserDto GetUser(Guid userId, string accessToken)
         {
             var user = _repository.User.FindByCondition(x => x.Id == userId).SingleOrDefault();
 
             ValidateUser(user, accessToken);
 
-            return user;
+            return UserMapper.MapToUserDto(user);
         }
 
         private void ValidateUser(IUser user, string token)

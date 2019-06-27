@@ -1,5 +1,4 @@
-﻿using GenesisChallenge.Domain.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace GenesisChallenge.Dtos
 {

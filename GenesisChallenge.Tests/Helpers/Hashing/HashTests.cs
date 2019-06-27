@@ -1,11 +1,10 @@
-using System;
 using GenesisChallenge.Helpers.Hashing;
 using NUnit.Framework;
 
 namespace Tests.Helpers.Hashing
 {
     public class HashTests
-    {    
+    {
         [Test]
         public void ShouldMatchHashWhenHashUntampered()
         {
@@ -67,7 +66,8 @@ namespace Tests.Helpers.Hashing
             _hash = "lalalalala";
         }
 
-        private void WhenValidateHash() {
+        private void WhenValidateHash()
+        {
             _validation = Hash.Validate(_stringToHash, _salt, _hash);
         }
 

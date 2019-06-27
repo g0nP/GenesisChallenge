@@ -16,7 +16,7 @@ namespace GenesisChallenge.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-                .HasMany(b => b.Telephones)
+                .HasMany(t => t.Telephones)
                 .WithOne();
         }
     }
