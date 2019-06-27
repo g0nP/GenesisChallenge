@@ -35,14 +35,19 @@ namespace GenesisChallenge.Controllers
         {
             try
             {
+                var accessToken = User.FindFirst("access_token")?.Value;
 
-                var user = _userService.GetUser(id);
+                var user = _userService.GetUser(id, accessToken);
                 return Ok(user);
 
             }
             catch (KeyNotFoundException ex)
             {
                 return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return new CustomErrorResult(StatusCodes.Status401Unauthorized, ex.Message);
             }
             catch (Exception ex)
             {

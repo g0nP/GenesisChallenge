@@ -2,6 +2,7 @@
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Responses;
 using GenesisChallenge.Services;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,9 @@ namespace GenesisChallenge.Tests.Services
 
                 _userRepository = new Mock<IUserRepository>();
                 _repositoryWrapper = new Mock<IRepositoryWrapper>();
+                _systemClock = new Mock<ISystemClock>();
+                _systemClock.Setup(c => c.GetCurrentTime()).Returns(DateTime.UtcNow);
+
             }
 
             [Test]
@@ -78,13 +82,13 @@ namespace GenesisChallenge.Tests.Services
             }
 
             [Test]
-            [TestCase("fred", "fred@email.com", "password")]
-            public void ShouldThrowEmailAlreadyExistsExceptionDuringSignUpWhenEmailAlreadyExists(string name, string email, string password)
+            [TestCase("fred", "fred@email.com", "password", "E-mail already exists")]
+            public void ShouldThrowEmailAlreadyExistsExceptionDuringSignUpWhenEmailAlreadyExists(string name, string email, string password, string exceptionMessage)
             {
                 GivenSignUpDto(name, email, password, _telephones);
                 GivenUserExists(email, password);
                 GivenAuthenticationService();
-                ThenExceptionIsThrown<EmailAlreadyExistsException>(WhenSignUp);
+                ThenExceptionIsThrown<EmailAlreadyExistsException>(WhenSignUp, exceptionMessage);
             }
 
             [Test]
@@ -111,23 +115,23 @@ namespace GenesisChallenge.Tests.Services
             }
 
             [Test]
-            [TestCase("fred@email.com", "password")]
-            public void ShouldThrowInexistentEmailExceptionWhenEmailDoesntExists(string email, string password)
+            [TestCase("fred@email.com", "password", "Invalid user and / or password")]
+            public void ShouldThrowInexistentEmailExceptionWhenEmailDoesntExists(string email, string password, string exceptionMessage)
             {
                 GivenSignInDto(email, password);
                 GivenUserDoesntExist();
                 GivenAuthenticationService();
-                ThenExceptionIsThrown<InexistentEmailException>(WhenSignIn);
+                ThenExceptionIsThrown<InexistentEmailException>(WhenSignIn, exceptionMessage);
             }
 
             [Test]
-            [TestCase("fred@email.com", "password")]
-            public void ShouldThrowInvalidPasswordExceptionWhenIncorrectPassword(string email, string password)
+            [TestCase("fred@email.com", "password", "Invalid user and / or password")]
+            public void ShouldThrowInvalidPasswordExceptionWhenIncorrectPassword(string email, string password, string exceptionMessage)
             {
                 GivenSignInDto(email, password);
                 GivenUserExists(email, "zzz");
                 GivenAuthenticationService();
-                ThenExceptionIsThrown<InvalidPasswordException>(WhenSignIn);
+                ThenExceptionIsThrown<InvalidPasswordException>(WhenSignIn, exceptionMessage);
             }
 
             private void GivenSignUpDto(string name, string email, string password, IReadOnlyCollection<TelephoneDto> telephones)
@@ -166,7 +170,7 @@ namespace GenesisChallenge.Tests.Services
 
             private void GivenAuthenticationService()
             {
-                _authenticationService = new AuthenticationService(_config, _repositoryWrapper.Object);
+                _authenticationService = new AuthenticationService(_config, _repositoryWrapper.Object, _systemClock.Object);
             }
 
             private void WhenSignUp()
@@ -215,6 +219,7 @@ namespace GenesisChallenge.Tests.Services
 
 
             private IConfigurationRoot _config;
+            private Mock<ISystemClock> _systemClock;
             private Mock<IUserRepository> _userRepository;
             private Mock<IRepositoryWrapper> _repositoryWrapper;
             private IAuthenticationService _authenticationService;

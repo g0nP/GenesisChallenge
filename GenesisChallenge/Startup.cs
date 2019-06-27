@@ -14,7 +14,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge
 {
@@ -52,11 +55,30 @@ namespace GenesisChallenge
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])),
                 };
+
+                cfg.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var accessToken = context.SecurityToken as JwtSecurityToken;
+                        if (accessToken != null)
+                        {
+                            ClaimsIdentity identity = context.Principal.Identity as ClaimsIdentity;
+                            if (identity != null)
+                            {
+                                identity.AddClaim(new Claim("access_token", accessToken.RawData));
+                            }
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRepositoryWrapper, RepositoryWrapper>();
+            services.AddScoped<ISystemClock, SystemClock>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

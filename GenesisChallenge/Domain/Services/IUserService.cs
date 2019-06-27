@@ -5,6 +5,6 @@ namespace GenesisChallenge.Domain.Services
 {
     public interface IUserService
     {
-        IUser GetUser(Guid userId);
+        IUser GetUser(Guid userId, string accessToken);
     }
 }

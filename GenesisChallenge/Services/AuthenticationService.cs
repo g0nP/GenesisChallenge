@@ -2,6 +2,7 @@
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Mappers;
 using GenesisChallenge.Responses;
 using Microsoft.Extensions.Configuration;
@@ -19,11 +20,13 @@ namespace GenesisChallenge.Services
     {
         private IRepositoryWrapper _repository;
         private IConfiguration _config;
+        private ISystemClock _systemClock;
 
-        public AuthenticationService(IConfiguration config, IRepositoryWrapper repository)
+        public AuthenticationService(IConfiguration config, IRepositoryWrapper repository, ISystemClock systemClock)
         {
             _config = config;
             _repository = repository;
+            _systemClock = systemClock;
         }
 
         public ISignInResponse SignIn(SignInDto signInDto)
@@ -32,8 +35,8 @@ namespace GenesisChallenge.Services
 
             var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
-            user.LastLoginOn = DateTime.UtcNow;
-            user.LastUpdatedOn = DateTime.UtcNow;
+            user.LastLoginOn = _systemClock.GetCurrentTime();
+            user.LastUpdatedOn = _systemClock.GetCurrentTime();
             user.Token = GenerateJSONWebToken(user);
 
             _repository.User.Update(user);
@@ -61,9 +64,9 @@ namespace GenesisChallenge.Services
                 Email = signUpDto.Email,
                 Password = signUpDto.Password,
                 Telephones = TelephonesMapper.MapToTelephone(signUpDto.Telephones),
-                LastLoginOn = DateTime.UtcNow,
-                LastUpdatedOn = DateTime.UtcNow,
-                CreationOn = DateTime.UtcNow,
+                LastLoginOn = _systemClock.GetCurrentTime(),
+                LastUpdatedOn = _systemClock.GetCurrentTime(),
+                CreationOn = _systemClock.GetCurrentTime(),
             };
 
             var token = GenerateJSONWebToken(user);

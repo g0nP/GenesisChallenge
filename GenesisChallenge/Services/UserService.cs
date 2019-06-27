@@ -1,5 +1,7 @@
 ﻿using GenesisChallenge.Domain.Models;
+using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,24 +10,45 @@ namespace GenesisChallenge.Services
 {
     public class UserService : IUserService
     {
-        private IList<User> _users = new List<User>
+        private IRepositoryWrapper _repository;
+        private ISystemClock _systemClock;
+
+        public UserService(IRepositoryWrapper repository, ISystemClock systemClock)
         {
-            //new User { Id = new Guid("0700c1be-5c95-4de2-a463-2703aa65c480"), Name = "Fred", Password = "123", Email = "fred@gmail.com", Telephones = new List<int> { 122, 333, 44 } },
-            //new User { Id = new Guid("12cc5b02-9354-45b4-83fc-7c24996b59a4"), Name = "Alice", Password = "321", Email = "alice@gmail.com", Telephones = new List<int>()},
-            //new User { Id = new Guid("08847a1e-50bb-4be6-ad0f-dba99dc9c637"), Name = "George", Password = "123", Email = "george@gmail.com", Telephones = new List<int> { 122 }},
-        };
+            _repository = repository;
+            _systemClock = systemClock;
+        }
 
-
-        public IUser GetUser(Guid userId)
+        public IUser GetUser(Guid userId, string accessToken)
         {
-            var user = _users.Where(x => x.Id == userId).SingleOrDefault();
+            var user = _repository.User.FindByCondition(x => x.Id == userId).SingleOrDefault();
 
+            ValidateUser(user, accessToken);
+
+            return user;
+        }
+
+        private void ValidateUser(IUser user, string token)
+        {
             if (user == null)
             {
                 throw new KeyNotFoundException("User doesn't exists");
             }
 
-            return user;
+            if (token == null)
+            {
+                throw new UnauthorizedAccessException("Unauthorized");
+            }
+
+            if (!string.Equals(user.Token, token))
+            {
+                throw new UnauthorizedAccessException("Unauthorized");
+            }
+
+            if (user.LastLoginOn <= _systemClock.GetCurrentTime().AddMinutes(-30))
+            {
+                throw new UnauthorizedAccessException("Invalid Session");
+            }
         }
     }
 }

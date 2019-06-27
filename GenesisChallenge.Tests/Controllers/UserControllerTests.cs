@@ -7,6 +7,7 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace GenesisChallenge.Tests.Controllers
 {
@@ -22,6 +23,7 @@ namespace GenesisChallenge.Tests.Controllers
         public void ShouldReturnOkWhenGetUser()
         {
             GivenGetUserResponse();
+            GivenToken("SomeToken");
             GivenUserController();
             WhenGetUser();
             ThenOkStatusCodeIsReturned();
@@ -32,25 +34,73 @@ namespace GenesisChallenge.Tests.Controllers
         public void ShouldReturnNotFoundDuringGetUserWhenKeyNotFoundExceptionIsThrown()
         {
             GivenGetUserThrowsKeyNotFoundException();
+            GivenToken("SomeToken");
             GivenUserController();
             WhenGetUser();
             ThenErrorStatusCodeIsReturned(StatusCodes.Status404NotFound);
         }
 
+        [Test]
+        public void ShouldReturnUnauthorizedDuringGetUserWhenUnauthorizedAccessExceptionIsThrown()
+        {
+            GivenGetUserThrowsUnauthorizedAccessException();
+            GivenToken("SomeToken");
+            GivenUserController();
+            WhenGetUser();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status401Unauthorized);
+        }
+
+        [Test]
+        public void ShouldReturnInternalServerErrorDuringGetUserWhenExceptionIsThrown()
+        {
+            GivenGetUserThrowsException();
+            GivenToken("SomeToken");
+            GivenUserController();
+            WhenGetUser();
+            ThenErrorStatusCodeIsReturned(StatusCodes.Status500InternalServerError);
+        }
+
         private void GivenGetUserResponse()
         {
             _user = new User();
-            _userServiceMock.Setup(p => p.GetUser(_userId)).Returns(_user);
+            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Returns(_user);
+        }
+
+        private void GivenToken(string token)
+        {
+            _token = token;
         }
 
         private void GivenGetUserThrowsKeyNotFoundException()
         {
-            _userServiceMock.Setup(p => p.GetUser(_userId)).Throws(new KeyNotFoundException());
+            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Throws(new KeyNotFoundException());
+        }
+
+        private void GivenGetUserThrowsUnauthorizedAccessException()
+        {
+            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Throws(new UnauthorizedAccessException());
+        }
+
+        private void GivenGetUserThrowsException()
+        {
+            _userServiceMock.Setup(p => p.GetUser(It.IsAny<Guid>(), It.IsAny<string>())).Throws(new Exception());
         }
 
         private void GivenUserController()
         {
             _userController = new UserController(_userServiceMock.Object);
+
+            var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
+            var userMock = new Mock<ClaimsPrincipal>();
+
+            var claim = new Claim("acces_token", _token);
+            userMock.Setup(p => p.FindFirst(It.IsAny<string>())).Returns(claim);
+
+            mockContext.SetupGet(hc => hc.User).Returns(userMock.Object);
+            _userController.ControllerContext = new ControllerContext()
+            {
+                HttpContext = mockContext.Object
+            };
         }
 
         private void WhenGetUser()
@@ -84,11 +134,12 @@ namespace GenesisChallenge.Tests.Controllers
 
         private static DateTime[] DateTimeValue = new DateTime[] { DateTime.UtcNow };
 
-        private readonly Guid _userId = Guid.NewGuid();
+        private readonly Guid _userId = new Guid("8497c1be-5c95-4de2-a463-2703aa65e784");
 
         private UserController _userController;
         private Mock<IUserService> _userServiceMock;
         private IUser _user;
+        private string _token;
         private IActionResult _actionResult;
     }
 }
