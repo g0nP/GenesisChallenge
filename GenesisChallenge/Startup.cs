@@ -96,6 +96,8 @@ namespace GenesisChallenge
                 app.UseHsts();
             }
 
+            app.UseStatusCodePagesWithReExecute("/error/{0}");
+
             app.UseAuthentication();
 
             app.UseHttpsRedirection();

@@ -104,7 +104,7 @@ namespace GenesisChallenge.Tests.Services
                 _aDateTime30MinAfterUserLogIn = lastLogin.AddMinutes(30);
                 _aDateTimeLessThan30MinAfterUserLogIn = lastLogin.AddMinutes(15);
 
-                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_databaseWithUser);
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<bool>())).Returns(_databaseWithUser);
                 _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
             }
 
@@ -112,7 +112,7 @@ namespace GenesisChallenge.Tests.Services
             {
                 var _databaseWithUser = new List<User>().AsQueryable();
 
-                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_databaseWithUser);
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<bool>())).Returns(_databaseWithUser);
                 _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
             }
 

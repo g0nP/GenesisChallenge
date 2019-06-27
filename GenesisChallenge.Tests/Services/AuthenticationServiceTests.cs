@@ -157,7 +157,7 @@ namespace GenesisChallenge.Tests.Services
 
             private void GivenUserDoesntExist()
             {
-                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_emptyDatabase);
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<bool>())).Returns(_emptyDatabase);
                 _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
             }
 
@@ -168,7 +168,7 @@ namespace GenesisChallenge.Tests.Services
 
                 var _databaseWithUser = new List<User> { new User { Email = email, Password = hash, Salt = salt } }.AsQueryable();
 
-                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_databaseWithUser);
+                _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<bool>())).Returns(_databaseWithUser);
                 _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
             }
 
