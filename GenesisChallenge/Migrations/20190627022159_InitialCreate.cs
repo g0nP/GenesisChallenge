@@ -17,6 +17,7 @@ namespace GenesisChallenge.Migrations
                     Email = table.Column<string>(nullable: false),
                     Password = table.Column<string>(nullable: false),
                     Token = table.Column<string>(nullable: false),
+                    Salt = table.Column<string>(nullable: false),
                     CreationOn = table.Column<DateTime>(nullable: false),
                     LastUpdatedOn = table.Column<DateTime>(nullable: false),
                     LastLoginOn = table.Column<DateTime>(nullable: false)

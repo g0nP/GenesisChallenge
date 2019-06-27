@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GenesisChallenge.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    [Migration("20190626032020_InitialCreate")]
+    [Migration("20190627022159_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,6 +56,9 @@ namespace GenesisChallenge.Migrations
                         .IsRequired();
 
                     b.Property<string>("Password")
+                        .IsRequired();
+
+                    b.Property<string>("Salt")
                         .IsRequired();
 
                     b.Property<string>("Token")

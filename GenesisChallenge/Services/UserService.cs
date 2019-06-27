@@ -1,6 +1,7 @@
 ﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace GenesisChallenge.Services
                 throw new UnauthorizedAccessException("Unauthorized");
             }
 
-            if (!string.Equals(user.Token, token))
+            if (!Hash.Validate(token, user.Salt, user.Token))
             {
                 throw new UnauthorizedAccessException("Unauthorized");
             }

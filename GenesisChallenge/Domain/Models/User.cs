@@ -16,6 +16,7 @@ namespace GenesisChallenge.Domain.Models
         string Name { get; set; }
         string Password { get; set; }
         string Token { get; set; }
+        string Salt { get; set; }
         IReadOnlyCollection<Telephone> Telephones { get; set; }
     }
 
@@ -30,6 +31,8 @@ namespace GenesisChallenge.Domain.Models
         public string Password { get; set; }
         [Required]
         public string Token { get; set; }
+        [Required]
+        public string Salt { get; set; }
         public IReadOnlyCollection<Telephone> Telephones { get; set; }
         public DateTime CreationOn { get; set; }
         public DateTime LastUpdatedOn { get; set; }

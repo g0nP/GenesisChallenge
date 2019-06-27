@@ -1,6 +1,7 @@
 ﻿using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
+using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Services;
 using Moq;
@@ -94,7 +95,10 @@ namespace GenesisChallenge.Tests.Services
 
             private void GivenUserInDatabase(Guid userId, string token, DateTime lastLogin)
             {
-                var _databaseWithUser = new List<User> { new User { Id = userId, Token = token, LastLoginOn = lastLogin } }.AsQueryable();
+                var salt = Salt.Create();
+                var hash = Hash.Create(token, salt);
+
+                var _databaseWithUser = new List<User> { new User { Id = userId, Token = hash, Salt = salt, LastLoginOn = lastLogin } }.AsQueryable();
 
                 _aDateTime30MinAfterUserLogIn = lastLogin.AddMinutes(30);
                 _aDateTimeLessThan30MinAfterUserLogIn = lastLogin.AddMinutes(15);

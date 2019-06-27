@@ -2,6 +2,7 @@
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Responses;
 using GenesisChallenge.Services;
@@ -162,7 +163,10 @@ namespace GenesisChallenge.Tests.Services
 
             private void GivenUserExists(string email, string password)
             {
-                var _databaseWithUser = new List<User> { new User { Email = email, Password = password } }.AsQueryable();
+                var salt = Salt.Create();
+                var hash = Hash.Create(password, salt);
+
+                var _databaseWithUser = new List<User> { new User { Email = email, Password = hash, Salt = salt } }.AsQueryable();
 
                 _userRepository.Setup(p => p.FindByCondition(It.IsAny<Expression<Func<User, bool>>>())).Returns(_databaseWithUser);
                 _repositoryWrapper.Setup(p => p.User).Returns(_userRepository.Object);
@@ -206,7 +210,7 @@ namespace GenesisChallenge.Tests.Services
             private void ThenRegisteredUserIsReturned()
             {
                 Assert.IsNotNull(_signInResponse);
-                Assert.That(!string.IsNullOrWhiteSpace(_signUpResponse.Token));
+                Assert.That(!string.IsNullOrWhiteSpace(_signInResponse.Token));
             }
 
             private static Guid[] RegisteredUserId = new Guid[] { new Guid("0700c1be-5c95-4de2-a463-2703aa65c480") };

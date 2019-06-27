@@ -2,16 +2,14 @@
 using GenesisChallenge.Domain.Repositories;
 using GenesisChallenge.Domain.Services;
 using GenesisChallenge.Dtos;
+using GenesisChallenge.Helpers;
+using GenesisChallenge.Helpers.Hashing;
 using GenesisChallenge.Infrastructure;
 using GenesisChallenge.Mappers;
 using GenesisChallenge.Responses;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Text;
 using static GenesisChallenge.Domain.CustomExceptions;
 
 namespace GenesisChallenge.Services
@@ -37,7 +35,9 @@ namespace GenesisChallenge.Services
 
             user.LastLoginOn = _systemClock.GetCurrentTime();
             user.LastUpdatedOn = _systemClock.GetCurrentTime();
-            user.Token = GenerateJSONWebToken(user);
+
+            var token = JwtHelper.GenerateJSONWebToken(_config, user);
+            user.Token = Hash.Create(token, user.Salt);
 
             _repository.User.Update(user);
             _repository.Save();
@@ -45,7 +45,7 @@ namespace GenesisChallenge.Services
             var response = new SignInResponse
             {
                 Id = user.Id,
-                Token = user.Token,
+                Token = token,
                 CreationOn = user.CreationOn,
                 LastLoginOn = user.LastLoginOn,
                 LastUpdatedOn = user.LastUpdatedOn
@@ -58,19 +58,22 @@ namespace GenesisChallenge.Services
         {
             ValidateSignUp(signUpDto);
 
+            var salt = Salt.Create();
+
             var user = new User
             {
                 Name = signUpDto.Name,
                 Email = signUpDto.Email,
-                Password = signUpDto.Password,
+                Salt = salt,
+                Password = Hash.Create(signUpDto.Password, salt),
                 Telephones = TelephonesMapper.MapToTelephone(signUpDto.Telephones),
                 LastLoginOn = _systemClock.GetCurrentTime(),
                 LastUpdatedOn = _systemClock.GetCurrentTime(),
                 CreationOn = _systemClock.GetCurrentTime(),
             };
 
-            var token = GenerateJSONWebToken(user);
-            user.Token = token;
+            var token = JwtHelper.GenerateJSONWebToken(_config, user);
+            user.Token = Hash.Create(token, salt);
 
             _repository.User.Create(user);
             _repository.Save();
@@ -102,14 +105,13 @@ namespace GenesisChallenge.Services
             {
                 throw new ArgumentNullException(nameof(signInDto.Password));
             }
-
             var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
 
             if (user == null)
             {
                 throw new InexistentEmailException("Invalid user and / or password");
             }
-            else if (user.Password != signInDto.Password)
+            else if (!Hash.Validate(signInDto.Password, user.Salt, user.Password))
             {
                 throw new InvalidPasswordException("Invalid user and / or password");
             }
@@ -138,26 +140,6 @@ namespace GenesisChallenge.Services
             {
                 throw new EmailAlreadyExistsException("E-mail already exists");
             }
-        }
-
-        private string GenerateJSONWebToken(IUser userInfo)
-        {
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.Email, userInfo.Email),
-                new Claim(JwtRegisteredClaimNames.Iat, userInfo.LastLoginOn.ToShortTimeString())
-            };
-
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-              issuer: _config["Jwt:Issuer"],
-              claims: claims,
-              expires: userInfo.LastLoginOn.AddMinutes(30),
-              signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

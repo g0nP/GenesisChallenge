@@ -56,6 +56,9 @@ namespace GenesisChallenge.Migrations
                     b.Property<string>("Password")
                         .IsRequired();
 
+                    b.Property<string>("Salt")
+                        .IsRequired();
+
                     b.Property<string>("Token")
                         .IsRequired();
 
