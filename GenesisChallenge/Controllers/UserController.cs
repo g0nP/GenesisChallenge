@@ -1,5 +1,5 @@
-﻿using GenesisChallenge.Domain;
-using GenesisChallenge.Domain.Services;
+﻿using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

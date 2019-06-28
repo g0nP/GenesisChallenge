@@ -1,14 +1,14 @@
-﻿using GenesisChallenge.Controllers;
-using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Dtos;
-using GenesisChallenge.Responses;
+﻿using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Controllers;
+using GenesisChallenge.Core.Dtos;
+using GenesisChallenge.Core.Responses;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
-using static GenesisChallenge.Domain.CustomExceptions;
+using static GenesisChallenge.Core.CustomExceptions;
 
 namespace GenesisChallenge.Tests.Controllers
 {
@@ -78,9 +78,9 @@ namespace GenesisChallenge.Tests.Controllers
         }
 
         [Test]
-        public void ShouldReturnConflictDuringSingInWhenInexistentEmailExceptionIsThrown()
+        public void ShouldReturnConflictDuringSingInWhenUnexistentEmailExceptionIsThrown()
         {
-            GivenSignInThrowsInexistentEmailException();
+            GivenSignInThrowsUnexistentEmailException();
             GivenUserController();
             WhenSignIn();
             ThenErrorStatusCodeIsReturned(StatusCodes.Status404NotFound);
@@ -136,9 +136,9 @@ namespace GenesisChallenge.Tests.Controllers
             _authenticationServiceMock.Setup(p => p.SignIn(_signInDto)).Throws(new ArgumentNullException());
         }
 
-        private void GivenSignInThrowsInexistentEmailException()
+        private void GivenSignInThrowsUnexistentEmailException()
         {
-            _authenticationServiceMock.Setup(p => p.SignIn(_signInDto)).Throws(new InexistentEmailException());
+            _authenticationServiceMock.Setup(p => p.SignIn(_signInDto)).Throws(new UnexistentEmailException());
         }
 
         private void GivenSignInThrowsInvalidPasswordException()

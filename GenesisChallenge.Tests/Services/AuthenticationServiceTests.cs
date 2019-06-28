@@ -1,11 +1,11 @@
-﻿using GenesisChallenge.Domain.Models;
-using GenesisChallenge.Domain.Repositories;
+﻿using GenesisChallenge.Abstractions.Repositories;
+using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Core;
+using GenesisChallenge.Core.Dtos;
+using GenesisChallenge.Core.Helpers.Hashing;
+using GenesisChallenge.Core.Responses;
+using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Dtos;
-using GenesisChallenge.Helpers.Hashing;
-using GenesisChallenge.Infrastructure;
-using GenesisChallenge.Responses;
-using GenesisChallenge.Services;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using static GenesisChallenge.Domain.CustomExceptions;
+using static GenesisChallenge.Core.CustomExceptions;
 
 namespace GenesisChallenge.Tests.Services
 {
@@ -117,12 +117,12 @@ namespace GenesisChallenge.Tests.Services
 
             [Test]
             [TestCase("fred@email.com", "password", "Invalid user and / or password")]
-            public void ShouldThrowInexistentEmailExceptionWhenEmailDoesntExists(string email, string password, string exceptionMessage)
+            public void ShouldThrowUnexistentEmailExceptionWhenEmailDoesntExists(string email, string password, string exceptionMessage)
             {
                 GivenSignInDto(email, password);
                 GivenUserDoesntExist();
                 GivenAuthenticationService();
-                ThenExceptionIsThrown<InexistentEmailException>(WhenSignIn, exceptionMessage);
+                ThenExceptionIsThrown<UnexistentEmailException>(WhenSignIn, exceptionMessage);
             }
 
             [Test]

@@ -1,10 +1,9 @@
-﻿using GenesisChallenge.Domain.Models;
-using GenesisChallenge.Domain.Repositories;
+﻿using GenesisChallenge.Abstractions.Repositories;
+using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Core;
+using GenesisChallenge.Core.Dtos;
+using GenesisChallenge.Domain.Models;
 using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Dtos;
-using GenesisChallenge.Helpers.Hashing;
-using GenesisChallenge.Infrastructure;
-using GenesisChallenge.Services;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -96,8 +95,8 @@ namespace GenesisChallenge.Tests.Services
 
             private void GivenUserInDatabase(Guid userId, string token, DateTime lastLogin)
             {
-                var salt = Salt.Create();
-                var hash = Hash.Create(token, salt);
+                var salt = Core.Helpers.Hashing.Salt.Create();
+                var hash = Core.Helpers.Hashing.Hash.Create(token, salt);
 
                 var _databaseWithUser = new List<User> { new User { Id = userId, Token = hash, Salt = salt, LastLoginOn = lastLogin } }.AsQueryable();
 

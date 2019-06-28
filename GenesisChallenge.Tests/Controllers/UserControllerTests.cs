@@ -1,7 +1,6 @@
-﻿using GenesisChallenge.Controllers;
-using GenesisChallenge.Domain.Models;
-using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Dtos;
+﻿using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Controllers;
+using GenesisChallenge.Core.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

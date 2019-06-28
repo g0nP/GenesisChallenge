@@ -1,4 +1,4 @@
-using GenesisChallenge.Helpers.Hashing;
+using GenesisChallenge.Core.Helpers.Hashing;
 using NUnit.Framework;
 
 namespace Tests.Helpers.Hashing

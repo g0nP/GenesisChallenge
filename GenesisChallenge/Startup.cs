@@ -1,10 +1,8 @@
-﻿using GenesisChallenge.DataAccess;
-using GenesisChallenge.Domain;
-using GenesisChallenge.Domain.Repositories;
+﻿using GenesisChallenge.Abstractions.Repositories;
+using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Core;
+using GenesisChallenge.DataAccess;
 using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Infrastructure;
-using GenesisChallenge.Persistence;
-using GenesisChallenge.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;

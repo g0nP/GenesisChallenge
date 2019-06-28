@@ -1,12 +1,12 @@
-﻿using GenesisChallenge.Domain;
-using GenesisChallenge.Domain.Services;
-using GenesisChallenge.Dtos;
+﻿using GenesisChallenge.Abstractions.Services;
+using GenesisChallenge.Core;
+using GenesisChallenge.Core.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
-using static GenesisChallenge.Domain.CustomExceptions;
+using static GenesisChallenge.Core.CustomExceptions;
 
 namespace GenesisChallenge.Controllers
 {
@@ -90,7 +90,7 @@ namespace GenesisChallenge.Controllers
                 _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status400BadRequest, ex.Message);
             }
-            catch (InexistentEmailException ex)
+            catch (UnexistentEmailException ex)
             {
                 _logger.LogError(ex, ex.Message);
                 return new CustomErrorResult(StatusCodes.Status404NotFound, ex.Message);
