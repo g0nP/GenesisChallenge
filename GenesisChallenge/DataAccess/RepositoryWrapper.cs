@@ -1,4 +1,5 @@
 ﻿using GenesisChallenge.Abstractions.Repositories;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.DataAccess
 {
@@ -28,9 +29,9 @@ namespace GenesisChallenge.DataAccess
             _repoContext = repositoryContext;
         }
 
-        public void Save()
+        public async Task Save()
         {
-            _repoContext.SaveChanges();
+            await _repoContext.SaveChangesAsync();
         }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using GenesisChallenge.Abstractions.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.DataAccess
 {
@@ -18,13 +20,13 @@ namespace GenesisChallenge.DataAccess
 
         public RepositoryBase(RepositoryContext repositoryContext)
         {
-            this.RepositoryContext = repositoryContext;
+            RepositoryContext = repositoryContext;
         }
 
         /// <summary>
         /// Finds and entity by a given condition
         /// </summary>
-        public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool includeRelationships = false)
+        public async Task<T> FindByConditionAsync(Expression<Func<T, bool>> expression, bool includeRelationships = false)
         {
             var query = this.RepositoryContext.Set<T>().Where(expression);
 
@@ -34,7 +36,7 @@ namespace GenesisChallenge.DataAccess
                     query = query.Include(property.Name);
             }
             
-            return query;
+            return await query.SingleOrDefaultAsync();
         }
 
         /// <summary>
@@ -42,7 +44,7 @@ namespace GenesisChallenge.DataAccess
         /// </summary>
         public void Create(T entity)
         {
-            this.RepositoryContext.Set<T>().Add(entity);
+            RepositoryContext.Set<T>().Add(entity);
         }
 
         /// <summary>
@@ -50,7 +52,7 @@ namespace GenesisChallenge.DataAccess
         /// </summary>
         public void Update(T entity)
         {
-            this.RepositoryContext.Set<T>().Update(entity);
+            RepositoryContext.Set<T>().Update(entity);
         }
     }
 }

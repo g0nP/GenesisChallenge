@@ -1,4 +1,6 @@
-﻿namespace GenesisChallenge.Abstractions.Repositories
+﻿using System.Threading.Tasks;
+
+namespace GenesisChallenge.Abstractions.Repositories
 {
     /// <summary>
     /// Wraps data access functionality for entities
@@ -12,6 +14,6 @@
         IUserRepository User { get; }
 
         /// <value>Calls the SaveChanges method to persist all the changes in the context</value>
-        void Save();
+        Task Save();
     }
 }

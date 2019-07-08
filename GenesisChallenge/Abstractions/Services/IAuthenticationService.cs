@@ -1,5 +1,6 @@
 ﻿using GenesisChallenge.Core.Dtos;
 using GenesisChallenge.Core.Responses;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.Abstractions.Services
 {
@@ -15,12 +16,12 @@ namespace GenesisChallenge.Abstractions.Services
         /// Creates a new user
         /// </summary>
         /// <param name="signUpDto">Necessary information to create a new User</param>
-        ISignUpResponse SignUp(SignUpDto signUpDto);
+        Task<ISignUpResponse> SignUp(SignUpDto signUpDto);
 
         /// <summary>
         /// Logs a user in
         /// </summary>
         /// <param name="signInDto">Necessary information to log a User in</param>
-        ISignInResponse SignIn(SignInDto signInDto);
+        Task<ISignInResponse> SignIn(SignInDto signInDto);
     }
 }

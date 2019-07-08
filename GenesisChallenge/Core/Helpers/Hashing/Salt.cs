@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.Core.Helpers.Hashing
 {
@@ -11,13 +12,13 @@ namespace GenesisChallenge.Core.Helpers.Hashing
         /// <summary>
         /// Creates a key to be used during the hashing process
         /// </summary>
-        public static string Create()
+        public static async Task<string> CreateAsync()
         {
             byte[] randomBytes = new byte[128 / 8];
             using (var generator = RandomNumberGenerator.Create())
             {
                 generator.GetBytes(randomBytes);
-                return Convert.ToBase64String(randomBytes);
+                return await Task.FromResult(Convert.ToBase64String(randomBytes));
             }
         }
     }

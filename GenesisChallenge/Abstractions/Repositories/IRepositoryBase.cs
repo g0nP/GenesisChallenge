@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.Abstractions.Repositories
 {
@@ -17,7 +19,7 @@ namespace GenesisChallenge.Abstractions.Repositories
         /// </summary>
         /// <param name="expression">Condition to search by</param>
         /// <param name="includeRelationships">Includes or not every relationship data of the entity</param>
-        IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool includeRelationships = false);
+        Task<T> FindByConditionAsync(Expression<Func<T, bool>> expression, bool includeRelationships = false);
 
         /// <summary>
         /// Creates a new entity

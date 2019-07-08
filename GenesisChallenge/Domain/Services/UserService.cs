@@ -8,6 +8,7 @@ using GenesisChallenge.Domain.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.Domain.Services
 {
@@ -25,16 +26,16 @@ namespace GenesisChallenge.Domain.Services
             _systemClock = systemClock;
         }
 
-        public UserDto GetUser(Guid userId, string accessToken)
+        public async Task<UserDto> GetUser(Guid userId, string accessToken)
         {
-            var user = _repository.User.FindByCondition(x => x.Id == userId, true).SingleOrDefault();
+            var user = await _repository.User.FindByConditionAsync(x => x.Id == userId, true);
 
-            ValidateUser(user, accessToken);
+            await ValidateUser(user, accessToken);
 
-            return UserMapper.MapToUserDto(user);
+            return await UserMapper.MapToUserDto(user);
         }
 
-        private void ValidateUser(IUser user, string token)
+        private async Task ValidateUser(IUser user, string token)
         {
             if (user == null)
             {
@@ -46,7 +47,9 @@ namespace GenesisChallenge.Domain.Services
                 throw new UnauthorizedAccessException("Unauthorized");
             }
 
-            if (!Hash.Validate(token, user.Salt, user.Token))
+            var isValidHash = await Hash.Validate(token, user.Salt, user.Token);
+
+            if (!isValidHash)
             {
                 throw new UnauthorizedAccessException("Unauthorized");
             }

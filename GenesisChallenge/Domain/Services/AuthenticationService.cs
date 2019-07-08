@@ -10,6 +10,7 @@ using GenesisChallenge.Domain.Models;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using static GenesisChallenge.Core.CustomExceptions;
 
 namespace GenesisChallenge.Domain.Services
@@ -30,19 +31,19 @@ namespace GenesisChallenge.Domain.Services
             _systemClock = systemClock;
         }
 
-        public ISignInResponse SignIn(SignInDto signInDto)
+        public async Task<ISignInResponse> SignIn(SignInDto signInDto)
         {
 
-            var user = ValidateSignIn(signInDto);
+            var user = await ValidateSignIn(signInDto);
 
             user.LastLoginOn = _systemClock.GetCurrentTime();
             user.LastUpdatedOn = _systemClock.GetCurrentTime();
 
-            var token = JwtHelper.GenerateJSONWebToken(_config, user);
-            user.Token = Hash.Create(token, user.Salt);
+            var token = await JwtHelper.GenerateJSONWebTokenAsync(_config, user);
+            user.Token = await Hash.CreateAsync(token, user.Salt);
 
             _repository.User.Update(user);
-            _repository.Save();
+            await _repository.Save();
 
             var response = new SignInResponse
             {
@@ -53,32 +54,32 @@ namespace GenesisChallenge.Domain.Services
                 LastUpdatedOn = user.LastUpdatedOn
             };
 
-            return response;
+            return await Task.FromResult(response);
         }
 
-        public ISignUpResponse SignUp(SignUpDto signUpDto)
+        public async Task<ISignUpResponse> SignUp(SignUpDto signUpDto)
         {
-            ValidateSignUp(signUpDto);
+            await ValidateSignUp(signUpDto);
 
-            var salt = Salt.Create();
+            var salt = await Salt.CreateAsync();
 
             var user = new User
             {
                 Name = signUpDto.Name,
                 Email = signUpDto.Email,
                 Salt = salt,
-                Password = Hash.Create(signUpDto.Password, salt),
-                Telephones = TelephoneMapper.MapToTelephone(signUpDto.Telephones),
+                Password = await Hash.CreateAsync(signUpDto.Password, salt),
+                Telephones = await TelephoneMapper.MapToTelephoneAsync(signUpDto.Telephones),
                 LastLoginOn = _systemClock.GetCurrentTime(),
                 LastUpdatedOn = _systemClock.GetCurrentTime(),
                 CreationOn = _systemClock.GetCurrentTime(),
             };
 
-            var token = JwtHelper.GenerateJSONWebToken(_config, user);
-            user.Token = Hash.Create(token, salt);
+            var token = await JwtHelper.GenerateJSONWebTokenAsync(_config, user);
+            user.Token = await Hash.CreateAsync(token, salt);
 
             _repository.User.Create(user);
-            _repository.Save();
+            await _repository.Save();
 
             var response = new SignUpResponse
             {
@@ -93,10 +94,10 @@ namespace GenesisChallenge.Domain.Services
                 LastUpdatedOn = user.LastUpdatedOn
             };
 
-            return response;
+            return await Task.FromResult(response);
         }
 
-        private User ValidateSignIn(SignInDto signInDto)
+        private async Task<User> ValidateSignIn(SignInDto signInDto)
         {
             if (string.IsNullOrWhiteSpace(signInDto.Email))
             {
@@ -107,13 +108,13 @@ namespace GenesisChallenge.Domain.Services
             {
                 throw new ArgumentNullException(nameof(signInDto.Password));
             }
-            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = await _repository.User.FindByConditionAsync(u => string.Equals(u.Email, signInDto.Email, StringComparison.OrdinalIgnoreCase));
 
             if (user == null)
             {
                 throw new UnexistentEmailException("Invalid user and / or password");
             }
-            else if (!Hash.Validate(signInDto.Password, user.Salt, user.Password))
+            else if (! await Hash.Validate(signInDto.Password, user.Salt, user.Password))
             {
                 throw new InvalidPasswordException("Invalid user and / or password");
             }
@@ -121,7 +122,7 @@ namespace GenesisChallenge.Domain.Services
             return user;
         }
 
-        private void ValidateSignUp(SignUpDto signUpDto)
+        private async Task ValidateSignUp(SignUpDto signUpDto)
         {
             if (string.IsNullOrWhiteSpace(signUpDto.Email))
             {
@@ -138,7 +139,7 @@ namespace GenesisChallenge.Domain.Services
                 throw new ArgumentNullException(nameof(signUpDto.Name));
             }
 
-            var user = _repository.User.FindByCondition(u => string.Equals(u.Email, signUpDto.Email, StringComparison.OrdinalIgnoreCase)).SingleOrDefault();
+            var user = await _repository.User.FindByConditionAsync(u => string.Equals(u.Email, signUpDto.Email, StringComparison.OrdinalIgnoreCase));
 
             if (user != null)
             {

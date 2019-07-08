@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 using static GenesisChallenge.Core.CustomExceptions;
 
 namespace GenesisChallenge.Controllers
@@ -40,12 +41,12 @@ namespace GenesisChallenge.Controllers
         /// <response code="409">Email already exists</response>
         /// <response code="500">Internal server error</response>
         [HttpPost("/signup")]
-        public IActionResult SignUp([FromBody] SignUpDto value)
+        public async Task<IActionResult> SignUp([FromBody] SignUpDto value)
         {
             try
             {
 
-                var signUpResponse = _authenticationService.SignUp(value);
+                var signUpResponse = await _authenticationService.SignUp(value);
                 return Ok(signUpResponse);
 
             }
@@ -76,12 +77,12 @@ namespace GenesisChallenge.Controllers
         /// <response code="401">User not authorized</response>
         /// <response code="500">Internal server error</response>
         [HttpPost("/signin")]
-        public IActionResult SignIn([FromBody] SignInDto value)
+        public async Task<IActionResult> SignIn([FromBody] SignInDto value)
         {
             try
             {
 
-                var signInResponse = _authenticationService.SignIn(value);
+                var signInResponse = await _authenticationService.SignIn(value);
                 return Ok(signInResponse);
 
             }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace GenesisChallenge.Controllers
 {
@@ -40,13 +41,13 @@ namespace GenesisChallenge.Controllers
         /// <response code="404">User not found</response>
         /// <response code="500">Internal server error</response>
         [HttpGet("{id}")]
-        public IActionResult GetUser(Guid id)
+        public async Task<IActionResult> GetUser(Guid id)
         {
             try
             {
                 var accessToken = User.FindFirst("access_token")?.Value;
 
-                var user = _userService.GetUser(id, accessToken);
+                var user = await _userService.GetUser(id, accessToken);
                 return Ok(user);
 
             }
